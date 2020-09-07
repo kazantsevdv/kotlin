@@ -1,4 +1,4 @@
-package com.example.kotlin.ui
+package com.example.kotlin.ui.main
 
 
 import androidx.lifecycle.LiveData
@@ -12,7 +12,13 @@ class MainViewModel : ViewModel() {
     private val viewStateLiveData: MutableLiveData<MainViewState> = MutableLiveData()
 
     init {
-        viewStateLiveData.value = MainViewState(Repository.notes)
+        Repository.getNotes().observeForever { notes ->
+            notes?.let {
+                viewStateLiveData.value =
+                    viewStateLiveData.value?.copy(notes = notes) ?: MainViewState(notes)
+            }
+
+        }
     }
 
     fun viewState(): LiveData<MainViewState> = viewStateLiveData
