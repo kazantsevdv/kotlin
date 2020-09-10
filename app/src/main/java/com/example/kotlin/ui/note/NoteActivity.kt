@@ -5,68 +5,71 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.view.MenuItem
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import com.example.kotlin.R
 import com.example.kotlin.data.entity.Note
+import com.example.kotlin.ui.base.BaseActivity
 import kotlinx.android.synthetic.main.activity_note.*
 import java.text.SimpleDateFormat
 import java.util.*
-import android.text.TextWatcher as TextWatcher1
 
-class NoteActivity : AppCompatActivity() {
+class NoteActivity : BaseActivity<Note?, NoteViewState>() {
 
     companion object {
         private val EXTRA_NOTE = NoteActivity::class.java.name + "extra.NOTE"
         private const val DATE_FORMAT = "dd.MM.yy HH:mm"
 
-        fun start(context: Context, note: Note? = null) =
+        fun start(context: Context, noteId: String? = null) =
             Intent(context, NoteActivity::class.java).run {
-
-                note?.let {
-                    putExtra(EXTRA_NOTE, note)
+                noteId?.let {
+                    putExtra(EXTRA_NOTE, noteId)
                 }
                 context.startActivity(this)
             }
     }
 
     private var note: Note? = null
-    lateinit var viewModel: NoteViewModel
-
-    private val textChangeListener = object : TextWatcher1 {
-        override fun afterTextChanged(s: Editable?) {
-            saveNote()
-        }
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+    override val viewModel: NoteViewModel by lazy {
+        ViewModelProvider(this).get(NoteViewModel::class.java)
+    }
+    override val layoutRes = R.layout.activity_note
+    val afterTextChanged: (text: Editable?) -> Unit = {
+        saveNote()
     }
 
-    val afterTextChanged: (text: Editable?) -> Unit = { _ -> saveNote() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_note)
         setSupportActionBar(toolbar)
-
-        note = intent.getParcelableExtra(EXTRA_NOTE)
-
-        viewModel = ViewModelProvider(this).get(NoteViewModel::class.java)
-
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        val noteId = intent.getStringExtra(EXTRA_NOTE)
+
+        noteId?.let { id ->
+            viewModel.loadNote(id)
+        } ?: let {
+            supportActionBar?.title = getString(R.string.new_note_title)
+        }
+        initView()
+        et_title.addTextChangedListener(afterTextChanged = afterTextChanged)
+        et_body.addTextChangedListener(afterTextChanged = afterTextChanged)
+    }
+
+    override fun renderData(data: Note?) {
+        this.note = data
         supportActionBar?.title = note?.let { note ->
             SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(note.lastChanged)
-        } ?: getString(R.string.new_note_title)
-
+        } ?: let {
+            getString(R.string.new_note_title)
+        }
 
         initView()
     }
 
-    private fun initView() {
-        et_title.removeTextChangedListener(textChangeListener)
-        et_body.removeTextChangedListener(textChangeListener)
 
+    private fun initView() {
         note?.let { note ->
             et_title.setText(note.title)
             et_body.setText(note.text)
@@ -79,14 +82,8 @@ class NoteActivity : AppCompatActivity() {
                 Note.Color.RED -> R.color.red
                 Note.Color.VIOLET -> R.color.violet
             }
-
             toolbar.setBackgroundColor(ContextCompat.getColor(this, color))
         }
-
-        et_title.addTextChangedListener(textChangeListener)
-        et_body.addTextChangedListener(textChangeListener)
-
-
     }
 
     private fun saveNote() {
@@ -111,4 +108,5 @@ class NoteActivity : AppCompatActivity() {
         else -> super.onOptionsItemSelected(item)
     }
 }
+
 
