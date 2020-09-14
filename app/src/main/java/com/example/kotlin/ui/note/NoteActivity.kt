@@ -5,22 +5,20 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.view.MenuItem
-import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import com.example.kotlin.R
+import com.example.kotlin.comon.format
+import com.example.kotlin.comon.getColorInt
 import com.example.kotlin.data.entity.Note
 import com.example.kotlin.ui.base.BaseActivity
 import kotlinx.android.synthetic.main.activity_note.*
-import java.text.SimpleDateFormat
 import java.util.*
 
 class NoteActivity : BaseActivity<Note?, NoteViewState>() {
 
     companion object {
         private val EXTRA_NOTE = NoteActivity::class.java.name + "extra.NOTE"
-        private const val DATE_FORMAT = "dd.MM.yy HH:mm"
-
         fun start(context: Context, noteId: String? = null) =
             Intent(context, NoteActivity::class.java).run {
                 noteId?.let {
@@ -60,7 +58,7 @@ class NoteActivity : BaseActivity<Note?, NoteViewState>() {
     override fun renderData(data: Note?) {
         this.note = data
         supportActionBar?.title = note?.let { note ->
-            SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(note.lastChanged)
+            note.lastChanged.format()
         } ?: let {
             getString(R.string.new_note_title)
         }
@@ -70,19 +68,10 @@ class NoteActivity : BaseActivity<Note?, NoteViewState>() {
 
 
     private fun initView() {
-        note?.let { note ->
-            et_title.setText(note.title)
-            et_body.setText(note.text)
-
-            val color = when (note.color) {
-                Note.Color.WHITE -> R.color.white
-                Note.Color.YELLOW -> R.color.yellow
-                Note.Color.GREEN -> R.color.green
-                Note.Color.BLUE -> R.color.blue
-                Note.Color.RED -> R.color.red
-                Note.Color.VIOLET -> R.color.violet
-            }
-            toolbar.setBackgroundColor(ContextCompat.getColor(this, color))
+        note?.run {
+            et_title.setText(title)
+            et_body.setText(text)
+            toolbar.setBackgroundColor(color.getColorInt(this@NoteActivity))
         }
     }
 
