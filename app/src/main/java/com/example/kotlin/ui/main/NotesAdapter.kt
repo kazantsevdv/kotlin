@@ -7,7 +7,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.kotlin.R
 import com.example.kotlin.comon.getColorInt
 import com.example.kotlin.data.entity.Note
-import kotlinx.android.synthetic.main.item.view.*
+import kotlinx.android.extensions.LayoutContainer
+import kotlinx.android.synthetic.main.item.*
 
 class NotesAdapter(val onItemClick: ((Note) -> Unit)? = null) :
     RecyclerView.Adapter<NotesAdapter.ViewHolder>() {
@@ -36,14 +37,14 @@ class NotesAdapter(val onItemClick: ((Note) -> Unit)? = null) :
         return notes.size
     }
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(note: Note) = with(itemView) {
+    inner class ViewHolder(override val containerView: View) :
+        RecyclerView.ViewHolder(containerView), LayoutContainer {
+        fun bind(note: Note) {
             tv_title.text = note.title
             tv_text.text = note.text
-            setBackgroundColor(note.color.getColorInt(itemView.context))
-            itemView.setOnClickListener {
-                onItemClick?.invoke(note)
-            }
+
+            itemView.setBackgroundColor(note.color.getColorInt(itemView.context))
+            itemView.setOnClickListener { onItemClick?.invoke(note) }
         }
     }
 }

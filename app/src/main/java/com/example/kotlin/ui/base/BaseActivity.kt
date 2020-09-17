@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import com.example.kotlin.R
 import com.example.kotlin.data.errors.NoAuthException
 import com.firebase.ui.auth.AuthUI
@@ -14,7 +13,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 abstract class BaseActivity<T, S : BaseViewState<T>> : AppCompatActivity() {
 
-    abstract val viewModel: BaseViewModel<T, S>
+    abstract val model: BaseViewModel<T, S>
     abstract val layoutRes: Int?
 
     companion object {
@@ -28,7 +27,7 @@ abstract class BaseActivity<T, S : BaseViewState<T>> : AppCompatActivity() {
         }
 
         setSupportActionBar(toolbar)
-        viewModel.getViewState().observe(this, Observer { state ->
+        model.getViewState().observe(this, { state ->
             state?.apply {
                 data?.let { renderData(it) }
                 error?.let { renderError(it) }
