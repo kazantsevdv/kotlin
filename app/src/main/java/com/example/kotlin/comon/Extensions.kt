@@ -17,12 +17,17 @@ fun Date.format(): String =
 
 fun Color.getColorInt(context: Context): Int =
     ContextCompat.getColor(
-        context, when (this) {
-            Color.WHITE -> R.color.white
-            Color.YELLOW -> R.color.yellow
-            Color.GREEN -> R.color.green
-            Color.BLUE -> R.color.blue
-            Color.RED -> R.color.red
-            Color.VIOLET -> R.color.violet
-        }
+        context, getColorRes()
     )
+
+
+fun Color.getColorRes(): Int =
+    when (this) {
+        Color.WHITE -> R.color.white
+        Color.YELLOW -> R.color.yellow
+        Color.GREEN -> R.color.green
+        Color.BLUE -> R.color.blue
+        Color.RED -> R.color.red
+        Color.VIOLET -> R.color.violet
+    }
+

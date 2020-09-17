@@ -2,27 +2,30 @@ package com.example.kotlin.ui.main
 
 
 import androidx.lifecycle.Observer
-import com.example.kotlin.data.NotesRepository
+import com.example.kotlin.data.Repository
 import com.example.kotlin.data.entity.Note
-import com.example.kotlin.data.model.NoteResult
+import com.example.kotlin.data.model.Result
+import com.example.kotlin.data.model.Result.Error
+import com.example.kotlin.data.model.Result.Success
 import com.example.kotlin.ui.base.BaseViewModel
 
 
-class MainViewModel : BaseViewModel<List<Note>?, MainViewState>() {
+class MainViewModel(val notesRepository: Repository) : BaseViewModel<List<Note>?, MainViewState>() {
 
-    private val notesObserver = Observer<NoteResult> { result ->
+    private val notesObserver = Observer<Result> { result ->
         result ?: return@Observer
         when (result) {
-            is NoteResult.Success<*> -> {
+            is Success<*> -> {
+                @Suppress("UNCHECKED_CAST")
                 viewStateLiveData.value = MainViewState(notes = result.data as? List<Note>)
             }
-            is NoteResult.Error -> {
+            is Error -> {
                 viewStateLiveData.value = MainViewState(error = result.error)
             }
         }
     }
 
-    private val repositoryNotes = NotesRepository.getNotes()
+    private val repositoryNotes = notesRepository.getNotes()
 
     init {
         viewStateLiveData.value = MainViewState()

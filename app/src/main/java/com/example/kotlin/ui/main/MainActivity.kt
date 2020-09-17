@@ -6,16 +6,16 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.kotlin.R
 import com.example.kotlin.data.entity.Note
 import com.example.kotlin.ui.base.BaseActivity
-import com.example.kotlin.ui.base.BaseViewModel
 import com.example.kotlin.ui.note.NoteActivity
 import com.example.kotlin.ui.splash.SplashActivity
 import com.firebase.ui.auth.AuthUI
 import kotlinx.android.synthetic.main.activity_main.*
+import org.jetbrains.anko.alert
+import org.koin.android.viewmodel.ext.android.viewModel
 
 class MainActivity : BaseActivity<List<Note>?, MainViewState>() {
 
@@ -26,9 +26,10 @@ class MainActivity : BaseActivity<List<Note>?, MainViewState>() {
         }
     }
 
-    override val viewModel: BaseViewModel<List<Note>?, MainViewState> by lazy {
-        ViewModelProvider(this).get(MainViewModel::class.java)
-    }
+    override val model: MainViewModel by viewModel()
+//    override val viewModel: BaseViewModel<List<Note>?, MainViewState> by lazy {
+//        ViewModelProvider(this).get(MainViewModel::class.java)
+//    }
 
     override val layoutRes = R.layout.activity_main
 
@@ -39,12 +40,17 @@ class MainActivity : BaseActivity<List<Note>?, MainViewState>() {
         setSupportActionBar(toolbar)
         rv_notes.layoutManager = GridLayoutManager(this, 2)
         adapter = NotesAdapter { note ->
-            NoteActivity.start(this, note.id)
+            openNoteScreen(note)
         }
         rv_notes.adapter = adapter
         fab.setOnClickListener {
-            NoteActivity.start(this)
+            openNoteScreen(null)
+
         }
+    }
+
+    private fun openNoteScreen(note: Note?) {
+        NoteActivity.start(this, note?.id)
     }
 
     override fun renderData(data: List<Note>?) {
@@ -61,10 +67,14 @@ class MainActivity : BaseActivity<List<Note>?, MainViewState>() {
         else -> false
     }
 
-    fun showLogoutDialog() {
-        supportFragmentManager.findFragmentByTag(LogoutDialog.TAG) ?: LogoutDialog.createInstance {
-            onLogout()
-        }.show(supportFragmentManager, LogoutDialog.TAG)
+
+    private fun showLogoutDialog() {
+        alert {
+            titleResource = R.string.logout_title
+            messageResource = R.string.logout_message
+            positiveButton(R.string.logout_ok) { onLogout() }
+            negativeButton(R.string.logout_cancel) { dialog -> dialog.dismiss() }
+        }.show()
     }
 
     fun onLogout() {
