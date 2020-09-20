@@ -1,6 +1,7 @@
 package com.example.kotlin.ui.note
 
 
+import androidx.annotation.VisibleForTesting
 import com.example.kotlin.data.Repository
 import com.example.kotlin.data.entity.Note
 import com.example.kotlin.data.model.Result
@@ -23,7 +24,6 @@ class NoteViewModel(val repository: Repository) : BaseViewModel<NoteViewState.Da
             t?.let {
                 viewStateLiveData.value = when (t) {
                     is Result.Success<*> -> NoteViewState(NoteViewState.Data(note = t.data as? Note))
-
                     is Result.Error -> NoteViewState(error = t.error)
                 }
             }
@@ -31,12 +31,13 @@ class NoteViewModel(val repository: Repository) : BaseViewModel<NoteViewState.Da
     }
 
 
-    fun saveChanges(note: Note) {
-        viewStateLiveData.value = NoteViewState(NoteViewState.Data(note = note))
-    }
-
-    override fun onCleared() {
+    //    fun saveChanges(note: Note) {
+//        viewStateLiveData.value = NoteViewState(NoteViewState.Data(note = note))
+//    }
+    @VisibleForTesting
+    public override fun onCleared() {
         pendingNote?.let { repository.saveNote(it) }
+
     }
 
 

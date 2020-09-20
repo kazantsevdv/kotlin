@@ -11,8 +11,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 
 class FireStoreProvider(
-    private val firebaseAuth: FirebaseAuth,
-    private val db: FirebaseFirestore
+    private val auth: FirebaseAuth,
+    private val store: FirebaseFirestore
 ) : RemoteDataProvider {
 
     companion object {
@@ -21,8 +21,8 @@ class FireStoreProvider(
 
     }
 
-    private val store = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+    // private val store = FirebaseFirestore.getInstance()
+    // private val auth = FirebaseAuth.getInstance()
 
     private val currentUser
         get() = auth.currentUser
