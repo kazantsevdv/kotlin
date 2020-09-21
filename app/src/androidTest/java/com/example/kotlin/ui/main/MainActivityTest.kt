@@ -15,10 +15,8 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import com.example.kotlin.R
 import com.example.kotlin.data.entity.Note
 import com.example.kotlin.ui.note.NoteActivity
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
+import com.example.kotlin.ui.note.NoteViewModel
+import io.mockk.*
 import org.hamcrest.Matchers.allOf
 import org.junit.After
 import org.junit.Before
@@ -47,10 +45,13 @@ class MainActivityTest {
 
     @Before
     fun setup() {
+        clearAllMocks()
         loadKoinModules(
-            listOf(module {
-                viewModel(override = true) { viewModel }
-            })
+            listOf(
+                module {
+                    viewModel(override = true) { viewModel }
+                    viewModel(override = true) { mockk<NoteViewModel>(relaxed = true) }
+                })
         )
 
         every { viewModel.getViewState() } returns viewStateLiveData
@@ -65,12 +66,6 @@ class MainActivityTest {
     }
 
     @Test
-    fun check_data_is_displayed() {
-        onView(withId(R.id.rv_notes)).perform(scrollToPosition<NotesAdapter.ViewHolder>(1))
-        onView(withText(testNotes[0].text)).check(matches(isDisplayed()))
-    }
-
-    @Test
     fun check_detail_activity_intent_sent() {
         onView(withId(R.id.rv_notes))
             .perform(actionOnItemAtPosition<NotesAdapter.ViewHolder>(1, click()))
@@ -81,5 +76,11 @@ class MainActivityTest {
                 hasExtra(EXTRA_NOTE, testNotes[1].id)
             )
         )
+    }
+
+    @Test
+    fun check_data_is_displayed() {
+        onView(withId(R.id.rv_notes)).perform(scrollToPosition<NotesAdapter.ViewHolder>(1))
+        onView(withText(testNotes[0].text)).check(matches(isDisplayed()))
     }
 }
