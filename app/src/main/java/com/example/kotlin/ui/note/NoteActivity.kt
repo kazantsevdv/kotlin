@@ -17,7 +17,7 @@ import org.jetbrains.anko.startActivity
 import org.koin.android.viewmodel.ext.android.viewModel
 import java.util.*
 
-class NoteActivity : BaseActivity<NoteViewState.Data, NoteViewState>() {
+class NoteActivity : BaseActivity<NoteViewState.Data>() {
 
 
     companion object {
@@ -30,9 +30,7 @@ class NoteActivity : BaseActivity<NoteViewState.Data, NoteViewState>() {
     private var backColor: Note.Color = Note.Color.WHITE
     private var note: Note? = null
 
-    //    override val viewModel: NoteViewModel by lazy {
-//        ViewModelProvider(this).get(NoteViewModel::class.java)
-//    }
+
     override val model: NoteViewModel by viewModel()
     override val layoutRes = R.layout.activity_note
 

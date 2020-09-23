@@ -5,7 +5,7 @@ import com.example.kotlin.ui.main.MainActivity
 import org.koin.android.viewmodel.ext.android.viewModel
 
 
-class SplashActivity : BaseActivity<Boolean?, SplashViewState>() {
+class SplashActivity : BaseActivity<Boolean>() {
 
     override val model: SplashViewModel by viewModel()
 
@@ -16,7 +16,7 @@ class SplashActivity : BaseActivity<Boolean?, SplashViewState>() {
         model.requestUser()
     }
 
-    override fun renderData(data: Boolean?) {
+    override fun renderData(data: Boolean) {
         data?.takeIf { it }?.let {
             startMainActivity()
         }
@@ -26,6 +26,7 @@ class SplashActivity : BaseActivity<Boolean?, SplashViewState>() {
         MainActivity.start(this)
         finish()
     }
+
 
 }
 

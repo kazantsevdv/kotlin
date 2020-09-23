@@ -9,33 +9,56 @@ import com.example.kotlin.data.errors.NoAuthException
 import com.firebase.ui.auth.AuthUI
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.consumeEach
+import kotlin.coroutines.CoroutineContext
 
 
-abstract class BaseActivity<T, S : BaseViewState<T>> : AppCompatActivity() {
+abstract class BaseActivity<T> : AppCompatActivity(), CoroutineScope {
 
-    abstract val model: BaseViewModel<T, S>
-    abstract val layoutRes: Int?
 
     companion object {
         const val RC_SIGN_IN = 4242
     }
 
+    override val coroutineContext: CoroutineContext by lazy { Dispatchers.Main + Job() }
+    private lateinit var dataJob: Job
+    private lateinit var errorJob: Job
+    abstract val model: BaseViewModel<T>
+    abstract val layoutRes: Int?
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        layoutRes?.let {
-            setContentView(it)
+        layoutRes?.let { setContentView(it) }
+
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dataJob = launch {
+            model.getViewState().consumeEach {
+                renderData(it)
+            }
         }
 
-        setSupportActionBar(toolbar)
-        model.getViewState().observe(this, { state ->
-            state?.apply {
-                data?.let { renderData(it) }
-                error?.let { renderError(it) }
-
+        errorJob = launch {
+            model.getErrorChannel().consumeEach {
+                renderError(it)
             }
-            renderData(state.data)
-        })
+        }
     }
+
+    override fun onStop() {
+        super.onStop()
+        dataJob.cancel()
+        errorJob.cancel()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        coroutineContext.cancel()
+    }
+
 
     abstract fun renderData(data: T)
 

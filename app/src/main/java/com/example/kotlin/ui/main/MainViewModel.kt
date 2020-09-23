@@ -1,41 +1,32 @@
 package com.example.kotlin.ui.main
 
 
-import androidx.annotation.VisibleForTesting
-import androidx.lifecycle.Observer
 import com.example.kotlin.data.Repository
 import com.example.kotlin.data.entity.Note
-import com.example.kotlin.data.model.Result
 import com.example.kotlin.data.model.Result.Error
 import com.example.kotlin.data.model.Result.Success
 import com.example.kotlin.ui.base.BaseViewModel
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.launch
 
 
-class MainViewModel(val notesRepository: Repository) : BaseViewModel<List<Note>?, MainViewState>() {
+class MainViewModel(val notesRepository: Repository) : BaseViewModel<List<Note>?>() {
+    private val notesChannel = notesRepository.getNotes()
 
-    private val notesObserver = Observer<Result> { result ->
-        result ?: return@Observer
-        when (result) {
-            is Success<*> -> {
-                @Suppress("UNCHECKED_CAST")
-                viewStateLiveData.value = MainViewState(notes = result.data as? List<Note>)
-            }
-            is Error -> {
-                viewStateLiveData.value = MainViewState(error = result.error)
+    init {
+        launch {
+            notesChannel.consumeEach {
+                when (it) {
+                    is Success<*> -> setData(it.data as? List<Note>)
+                    is Error -> setError(it.error)
+                }
             }
         }
     }
 
-    private val repositoryNotes = notesRepository.getNotes()
-
-    init {
-        viewStateLiveData.value = MainViewState()
-        repositoryNotes.observeForever(notesObserver)
-    }
-
-    @VisibleForTesting
-    public override fun onCleared() {
-        repositoryNotes.removeObserver(notesObserver)
+    override fun onCleared() {
+        notesChannel.cancel()
         super.onCleared()
     }
+
 }
